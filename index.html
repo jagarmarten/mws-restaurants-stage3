@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="Website about restaurants in NYC.">
+  <meta name="theme-color" content="#252831" />
+
+  <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="manifest" href="./js/manifest.json">
+  <link rel="icon" href="./img/favicon.ico">
+  
+  <title>Restaurant Reviews</title>
+</head>
+
+<body>
+
+  <header>
+    <nav>
+      <h1 tabindex="0">
+        <a href="./">Restaurant Reviews</a>
+      </h1>
+    </nav>
+  </header>
+
+  <main id="maincontent">
+    <a href="#content" class="skip-link">Skip the map</a>
+    <section role="application" id="map-container">
+      <div id="map" aria-hidden="true" role="application"></div>
+    </section>
+    <section id="content" tabindex="-1" role="search">
+      <div class="filter-options">
+        <h2 tabindex="0">Filter Results</h2>
+        <label for="neighborhoods">Neighborhoods:
+        <select id="neighborhoods-select" name="neighborhoods" onchange="updateRestaurants()">
+          <option value="all">All Neighborhoods</option>
+        </select>
+        </label>
+        <label for="cuisines">Cuisines:
+        <select id="cuisines-select" name="cuisines" onchange="updateRestaurants()">
+          <option value="all">All Cuisines</option>
+        </select>
+        </label>
+      </div>
+      <ul id="restaurants-list"></ul>
+    </section>
+  </main>
+
+  <script>
+  //checing if there is service worker registered, if not we'll register it
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('./sw.js', {
+        scope: './'
+      }) //link to the our service worker file; scope is the root directory
+      .then(function (registration) {
+        console.log('Service Worker Registered');
+      }) //if the registration was successful, return the registration details to the console
+      .catch(function (error) {
+        console.log('Service Worker Failed to Register', error);
+      }); //if there was an error, return the error to the console
+  }
+  window.addEventListener("beforeinstallprompt", function (e) {
+      // log the platforms provided as options in an install prompt 
+      console.log(e.platforms); // e.g., ["web", "android", "windows"] 
+      e.userChoice.then(function (outcome) {
+        console.log(outcome); // either "accepted" or "dismissed"
+      }, handleError);
+    });</script>
+  <script src="./lib/idb.js"></script>
+  <script type="application/javascript" charset="utf-8" src="./js/dbhelper.js"></script>
+  <script type="application/javascript" charset="utf-8" src="./js/main.js"></script>
+  <script src="./js/echo.min.js"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDKwqxSWD39Hq7LWG4QEam-OgC5fYNRKMQ&callback=initMap" type="text/javascript"></script>
+
+  <footer id="footer" tabindex="0">
+    Copyright (c) 2017
+    <a href="./" tabindex="0">
+      <strong>Restaurant Reviews</strong>
+    </a> All Rights Reserved.
+  </footer>
+
+</body>
+
+</html>

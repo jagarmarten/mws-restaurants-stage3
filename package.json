@@ -1,0 +1,17 @@
+{
+  "name": "mws-restaurant-stage-1-master",
+  "version": "1.0.0",
+  "description": "--- #### _Three Stage Course Material Project - Restaurant Reviews_",
+  "main": "sw.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "idb": "^2.1.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "gulp-uglify": "^3.0.0"
+  }
+}

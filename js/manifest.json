@@ -1,0 +1,20 @@
+{
+    "short_name": "Reviews",
+    "name": "Restaurant Reviews",
+    "icons": [{
+            "src": "/img/icon-192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/img/icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "start_url": "/mws-restaurants-stage-2/",
+    "background_color": "#fff",
+    "display": "standalone",
+    "scope": "/mws-restaurants-stage-2/",
+    "theme_color": "#252831"
+}
