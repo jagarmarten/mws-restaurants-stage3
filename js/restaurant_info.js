@@ -138,13 +138,15 @@ favoriteButton = () => {
     
     //when the button is clicked, do this
     button.onclick = function () {
+      //if the resturant is currently favorite run this if the restaurant isn't favorite then execute the code in else
       if (obj.is_favorite == true) {
         const postData = {"is_favorite": false}; //data to send to the server
         postMethod(postData); //use the postMethod function
         
+        //idb update the is_favorite entry
         dbPromise.then(function (db) {
           var tx = db.transaction('restaurants', 'readwrite');
-          var store = tx.objectStore('restaurants', {keyPath: "id"});
+          var store = tx.objectStore('restaurants');
           var item = {
             is_favorite: false
           };
@@ -153,15 +155,16 @@ favoriteButton = () => {
         }).then(function () {
           console.log('item updated!');
         });
-        
+
         button.value = "Favorite restaurant"; //change the value of the button
       } else {
         const postData = {"is_favorite": true}; //data to send to the server
         postMethod(postData); //use the postMethod function
 
+        //idb update the is_favorite entry
         dbPromise.then(function (db) {
           var tx = db.transaction('restaurants', 'readwrite');
-          var store = tx.objectStore('restaurants', {keyPath: "id"});
+          var store = tx.objectStore('restaurants');
           var item = {
             is_favorite: true
           };
