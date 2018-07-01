@@ -147,10 +147,8 @@ favoriteButton = () => {
         dbPromise.then(function (db) {
           var tx = db.transaction('restaurants', 'readwrite');
           var store = tx.objectStore('restaurants');
-          var item = {
-            is_favorite: false
-          };
-          store.put(item);
+          obj.is_favorite = false;
+          store.put(obj);
           return tx.complete;
         }).then(function () {
           console.log('item updated!');
@@ -165,10 +163,8 @@ favoriteButton = () => {
         dbPromise.then(function (db) {
           var tx = db.transaction('restaurants', 'readwrite');
           var store = tx.objectStore('restaurants');
-          var item = {
-            is_favorite: true
-          };
-          store.put(item);
+          obj.is_favorite = true;
+          store.put(obj);
           return tx.complete;
         }).then(function () {
           console.log('item updated!');
