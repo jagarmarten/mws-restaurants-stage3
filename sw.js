@@ -1,13 +1,14 @@
 
 // sw.js
 
-const cacheName = 'v33';
+const cacheName = 'v35';
 const filesToCache = [
     'sw.js',
     './',
     './index.html',
     './restaurant.html',
     './css/styles.css',
+    './css/non-minified-styles.css',
     './js/dbhelper.js',
     './js/main.js',
     './js/restaurant_info.js',

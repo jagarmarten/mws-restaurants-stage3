@@ -98,6 +98,21 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   fillReviewsHTML();
 }
 
+//universal postMethod()
+let postMethod = (data) => {
+  //fetch with POST method
+  fetch(`http://localhost:1337/restaurants/${parseInt(getParameterByName('id'))}`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(res => {
+    return res.json()
+  }).catch(error => console.error('Error:', error))
+    .then(response => console.log('Success:', response));
+}
+
 /**
  * Creating the new favorite button
  */
@@ -111,19 +126,6 @@ favoriteButton = () => {
   section.appendChild(button); //add the button to the section
   
   //fetch - post method function
-  let postMethod = (data) => {
-    //fetch with POST method
-    fetch(`http://localhost:1337/restaurants/${parseInt(getParameterByName('id'))}`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then(res => {
-      return res.json()
-    }).catch(error => console.error('Error:', error))
-      .then(response => console.log('Success:', response));
-  }
 
   //read/write to idb
   dbPromise.then(db => {
@@ -145,7 +147,7 @@ favoriteButton = () => {
         
         //idb update the is_favorite entry
         dbPromise.then(function (db) {
-          var tx = db.transaction('restaurants', 'readwrite');
+          var tx = db.transaction('restaurants', 'readwrite');    
           var store = tx.objectStore('restaurants');
           obj.is_favorite = false;
           store.put(obj);
@@ -259,6 +261,43 @@ createReviewHTML = (review) => {
   return li;
 }
 
+addReviews = () => {
+  const submit = document.getElementById("userSubmit");
+  const id = parseInt(getParameterByName('id'));
+
+  //fetch - post method function
+
+  //read/write to idb
+  dbPromise.then(db => {
+    return db.transaction('restaurants', 'readwrite')
+      .objectStore('restaurants').get(parseInt(getParameterByName('id')));
+  }).then(function (obj) {
+
+    //when the button is clicked, do this
+    submit.addEventListener("submit", function (event) {
+      event.preventDefault()
+      const postData = {
+        "restaurant_id": id,
+        "name": getParameterByName('userName'),
+        "rating": getParameterByName('userRating'),
+        "comments": getParameterByName('userReview')
+      }
+      
+      //idb update the is_favorite entry
+      dbPromise.then(function (db) {
+        var tx = db.transaction('restaurants', 'readwrite');
+        var store = tx.objectStore('restaurants');
+        obj.reviews = [postData];
+        store.put(obj);
+        return tx.complete;
+      }).then(function () {
+        console.log('Review added!');
+        postMethod(postData); //use the postMethod function
+      });
+    })
+  });
+}
+addReviews();
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
