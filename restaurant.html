@@ -67,9 +67,9 @@
 
       <form id="userReviewForm" name="userReview">
         User name:<br>
-        <input type="text" name="userName" required=""><br>
+        <input type="text" name="userName" id="userName" required><br>
         Rating:<br>
-        <select required name="userRating">
+        <select required name="userRating" id="userRating">
           <option value="0">Select:</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -79,7 +79,7 @@
         </select><br>
         Review:<br>
         <!--<input type="textarea" name="userReview" required=""><br><br>-->
-        <textarea name="userReview" rows="10" required=""></textarea><br><br>
+        <textarea name="userReview" rows="10" required id="userReview"></textarea><br><br>
         <input type="submit" name="userReviewSubmit" value="Add review" id="userSubmit">
       </form>
     </section>

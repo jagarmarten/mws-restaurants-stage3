@@ -99,9 +99,9 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 }
 
 //universal postMethod()
-let postMethod = (data) => {
+let postMethod = (url, data) => {
   //fetch with POST method
-  fetch(`http://localhost:1337/restaurants/${parseInt(getParameterByName('id'))}`, {
+  fetch(url, {
     method: 'POST',
     body: JSON.stringify(data),
     headers: {
@@ -143,7 +143,7 @@ favoriteButton = () => {
       //if the resturant is currently favorite run this if the restaurant isn't favorite then execute the code in else
       if (obj.is_favorite == true) {
         const postData = {"is_favorite": false}; //data to send to the server
-        postMethod(postData); //use the postMethod function
+        postMethod(`http://localhost:1337/restaurants/${parseInt(getParameterByName('id'))}`, postData); //use the postMethod function
         
         //idb update the is_favorite entry
         dbPromise.then(function (db) {
@@ -159,7 +159,7 @@ favoriteButton = () => {
         button.value = "Favorite restaurant"; //change the value of the button
       } else {
         const postData = {"is_favorite": true}; //data to send to the server
-        postMethod(postData); //use the postMethod function
+        postMethod(`http://localhost:1337/restaurants/${parseInt(getParameterByName('id'))}`, postData); //use the postMethod function
 
         //idb update the is_favorite entry
         dbPromise.then(function (db) {
@@ -261,12 +261,31 @@ createReviewHTML = (review) => {
   return li;
 }
 
+//
+// I'm having a problem with form submission and then reading the data from the DB
+//
+
+/*
+
+Every time an user submits the form data, the request goes successfully. The review is added to the indexedDB and server as well. But the problem occurs when I want to add another review. The previous one suddenly gets deleted. What should I do? Thanks
+
+*/
+
 addReviews = () => {
   const submit = document.getElementById("userSubmit");
   const id = parseInt(getParameterByName('id'));
 
-  //fetch - post method function
+  const months = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ]; //an array of each month name
+  var currentDate = new Date(); //create a new date obj
 
+  var date = currentDate.getDate(); //get the current date
+  var month = currentDate.getMonth(); //get the current month number
+  var year = currentDate.getFullYear(); //get the current year
+
+  var dateString = months[month] + " " + date + ", " + year; //concat the date, month and year together - the output is - "Month Date, Year" -> "July 18, 2018"
+  //fetch - post method function
   //read/write to idb
   dbPromise.then(db => {
     return db.transaction('restaurants', 'readwrite')
@@ -274,16 +293,18 @@ addReviews = () => {
   }).then(function (obj) {
 
     //when the button is clicked, do this
-    submit.addEventListener("submit", function (event) {
-      event.preventDefault()
+    submit.addEventListener("click", function (event) {
+      event.preventDefault();
       const postData = {
-        "restaurant_id": id,
-        "name": getParameterByName('userName'),
-        "rating": getParameterByName('userRating'),
-        "comments": getParameterByName('userReview')
-      }
+        "date": dateString,
+        "name": document.getElementById("userName").value,
+        "rating": document.getElementById("userRating").value,
+        "comments": document.getElementById("userReview").value
+      };
+
+      postMethod(`http://localhost:1337/reviews/${id}`, postData); //use the postMethod function
       
-      //idb update the is_favorite entry
+      //idb add review entry (form data)
       dbPromise.then(function (db) {
         var tx = db.transaction('restaurants', 'readwrite');
         var store = tx.objectStore('restaurants');
@@ -292,7 +313,6 @@ addReviews = () => {
         return tx.complete;
       }).then(function () {
         console.log('Review added!');
-        postMethod(postData); //use the postMethod function
       });
     })
   });
