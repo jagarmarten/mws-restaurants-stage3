@@ -296,13 +296,14 @@ addReviews = () => {
     submit.addEventListener("click", function (event) {
       event.preventDefault();
       const postData = {
-        "date": dateString,
+        //"date": dateString
+        "restaurant_id": id,
         "name": document.getElementById("userName").value,
         "rating": document.getElementById("userRating").value,
         "comments": document.getElementById("userReview").value
       };
 
-      postMethod(`http://localhost:1337/reviews/${id}`, postData); //use the postMethod function
+      postMethod(`http://localhost:1337/reviews/`, postData); //use the postMethod function
       
       //idb add review entry (form data)
       dbPromise.then(function (db) {
