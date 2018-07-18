@@ -296,7 +296,6 @@ addReviews = () => {
     submit.addEventListener("click", function (event) {
       event.preventDefault();
       const postData = {
-        //"date": dateString
         "restaurant_id": id,
         "name": document.getElementById("userName").value,
         "rating": document.getElementById("userRating").value,
