@@ -87,7 +87,7 @@ fetchRestaurantFromURL = (callback) => {
           console.error(error);
           return;
         }
-        fillReviewsHTML();
+        fillReviewsHTML(review);
         callback(null, review)
       });
       fillRestaurantHTML();

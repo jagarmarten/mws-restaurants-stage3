@@ -1,3 +1,19 @@
+/**
+ * Get a parameter by name from page URL.
+ */
+getParameterByName = (name, url) => {
+  if (!url)
+    url = window.location.href;
+  name = name.replace(/[\[\]]/g, '\\$&');
+  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
+    results = regex.exec(url);
+  if (!results)
+    return null;
+  if (!results[2])
+    return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
 /*Common database helper functions.*/
 class DBHelper {
 
@@ -223,7 +239,7 @@ class DBHelper {
 
   static get REVIEWS_URL() {
     const port = 1337 // Change this to your server port
-    return `http://localhost:${port}/reviews/`;
+    return `http://localhost:${port}/reviews/?restaurant_id=`;
   }
   
   /**
@@ -239,7 +255,7 @@ class DBHelper {
       }).then((values) => {
         if (values.length == 0) {
           //fetch data with Fetch API
-          fetch(DBHelper.REVIEWS_URL)
+          fetch(DBHelper.REVIEWS_URL + getParameterByName('id'))
             .then(function (response) {
               return response.json();
             })
@@ -293,8 +309,8 @@ class DBHelper {
         callback(error, null);
       } else {
         const review = reviews.find(r => r.id == id);
+        console.log(reviews);
         if (review) { // Got the review
-          console.log(review);
           callback(null, review);
         } else { // Review does not exist in the database
           callback('Review does not exist', null);
