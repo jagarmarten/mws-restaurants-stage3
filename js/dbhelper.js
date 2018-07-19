@@ -1,7 +1,3 @@
-/**
- * Common database helper functions.
- */
-
 /*Common database helper functions.*/
 class DBHelper {
 
@@ -18,10 +14,14 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    const dbPromise = idb.open('restaurantsDB', 1, upgradeDB => {
+    const dbPromise = idb.open('restaurantsDB', 3, upgradeDB => {
       switch (upgradeDB.oldVersion) {
         case 0:
           upgradeDB.createObjectStore('restaurants', {
+            keyPath: 'id'
+          });
+        case 1:
+          upgradeDB.createObjectStore('reviews', {
             keyPath: 'id'
           });
       }
@@ -70,13 +70,13 @@ class DBHelper {
         })
     } else {
       dbPromise.then(db => {
-            const tx = db.transaction('restaurants', 'readwrite');
-            var keyValStore = tx.objectStore('restaurants');
-            return keyValStore.getAll();
-          }).then((restaurants) => {
-            console.log("Fetching from restaurantsDB");
-            callback(null, restaurants);
-          });
+        const tx = db.transaction('restaurants', 'readwrite');
+        var keyValStore = tx.objectStore('restaurants');
+        return keyValStore.getAll();
+      }).then((restaurants) => {
+        console.log("Fetching from restaurantsDB");
+        callback(null, restaurants);
+      });
     }
     
   }
@@ -216,5 +216,90 @@ class DBHelper {
     });
     return marker;
   }
+  /**
+   * Reviews URL.
+   * Change this to restaurants.json file location on your server.
+   */
 
+  static get REVIEWS_URL() {
+    const port = 1337 // Change this to your server port
+    return `http://localhost:${port}/reviews/`;
+  }
+  
+  /**
+   * Fetch all reviews.
+   */
+  static fetchReviews(callback) {
+    if (navigator.onLine) {
+      dbPromise.then(db => {
+        const tx = db.transaction('reviews', 'readwrite');
+        var keyValStore = tx.objectStore('reviews');
+  
+        return keyValStore.getAll();
+      }).then((values) => {
+        if (values.length == 0) {
+          //fetch data with Fetch API
+          fetch(DBHelper.REVIEWS_URL)
+            .then(function (response) {
+              return response.json();
+            })
+            .then(function (reviews) {
+  
+              dbPromise.then(db => {
+                const tx = db.transaction('reviews', 'readwrite');
+                var keyValStore = tx.objectStore('reviews');
+  
+                reviews.forEach(function (review) {
+                  keyValStore.put(review);
+                })
+  
+                return tx.complete;
+              }).then(() => console.log("Item added to the reviewsDB"));
+              callback(null, reviews);
+            }).catch(function (error) {
+              console.log("Houston, we had an error!", error);
+              callback(error, null);
+            });
+        } else {
+          dbPromise.then(db => {
+            const tx = db.transaction('reviews', 'readwrite');
+            var keyValStore = tx.objectStore('reviews');
+            return keyValStore.getAll();
+          }).then((reviews) => {
+            console.log("Fetching from reviewsDB");
+            callback(null, reviews);
+          });
+        }
+      })
+    } else {
+      dbPromise.then(db => {
+        const tx = db.transaction('reviews', 'readwrite');
+        var keyValStore = tx.objectStore('reviews');
+        return keyValStore.getAll();
+      }).then((reviews) => {
+        console.log("Fetching from reviewsDB");
+        callback(null, reviews);
+      });
+    }
+  }
+  
+  /**
+   * Fetch a review by its ID.
+   */
+  static fetchReviewById(id, callback) {
+    // fetch all reviews with proper error handling.
+    DBHelper.fetchReviews((error, reviews) => {
+      if (error) {
+        callback(error, null);
+      } else {
+        const review = reviews.find(r => r.id == id);
+        if (review) { // Got the review
+          console.log(review);
+          callback(null, review);
+        } else { // Review does not exist in the database
+          callback('Review does not exist', null);
+        }
+      }
+    });
+  }
 }

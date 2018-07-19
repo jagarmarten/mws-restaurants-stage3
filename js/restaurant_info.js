@@ -17,10 +17,15 @@ getParameterByName = (name, url) => {
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-const dbPromise = idb.open('restaurantsDB', 1, upgradeDB => {
+//open the IDB so that I could use it in this file as well
+const dbPromise = idb.open('restaurantsDB', 3, upgradeDB => {
   switch (upgradeDB.oldVersion) {
     case 0:
       upgradeDB.createObjectStore('restaurants', {
+        keyPath: 'id'
+      });
+    case 1:
+      upgradeDB.createObjectStore('reviews', {
         keyPath: 'id'
       });
   }
@@ -46,6 +51,18 @@ window.initMap = () => {
 }
 
 /**
+ * Add restaurant name to the breadcrumb navigation menu
+ */
+fillBreadcrumb = (restaurant = self.restaurant) => {
+  const breadcrumb = document.getElementById('breadcrumb');
+  breadcrumb.tabIndex = "0";
+  const li = document.createElement('li');
+  li.tabIndex = "0";
+  li.innerHTML = restaurant.name;
+  breadcrumb.appendChild(li);
+}
+
+/**
  * Get current restaurant from page URL.
  */
 fetchRestaurantFromURL = (callback) => {
@@ -64,6 +81,15 @@ fetchRestaurantFromURL = (callback) => {
         console.error(error);
         return;
       }
+      DBHelper.fetchReviewById(id, (error, review) => {
+        self.review = review;
+        if (!review) {
+          console.error(error);
+          return;
+        }
+        fillReviewsHTML();
+        callback(null, review)
+      });
       fillRestaurantHTML();
       callback(null, restaurant)
     });
@@ -77,7 +103,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
-
+  
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
@@ -86,16 +112,16 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   image.alt = restaurant.name;
   image.title = restaurant.name + " restaurant";
   image.src = DBHelper.imageUrlForRestaurant(restaurant) + ".jpg";
-
+  
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
-
+  
   // fill operating hours
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  //fillReviewsHTML();
 }
 
 //universal postMethod()
@@ -110,7 +136,7 @@ let postMethod = (url, data) => {
   }).then(res => {
     return res.json()
   }).catch(error => console.error('Error:', error))
-    .then(response => console.log('Success:', response));
+  .then(response => console.log('Success:', response));
 }
 
 /**
@@ -118,15 +144,15 @@ let postMethod = (url, data) => {
  */
 favoriteButton = () => {
   const section = document.getElementById("restaurant-container"); //get the section
-
+  
   let button = document.createElement('input'); //create new input element
   button.setAttribute('type', 'button'); //make this input of type button
   button.setAttribute('id', 'favoriteButton'); //set the id of this input to favoriteButton
-
+  
   section.appendChild(button); //add the button to the section
   
   //fetch - post method function
-
+  
   //read/write to idb
   dbPromise.then(db => {
     return db.transaction('restaurants', 'readwrite')
@@ -149,35 +175,36 @@ favoriteButton = () => {
         dbPromise.then(function (db) {
           var tx = db.transaction('restaurants', 'readwrite');    
           var store = tx.objectStore('restaurants');
-          obj.is_favorite = false;
-          store.put(obj);
+          obj.is_favorite = false; //set the is_favorite to false
+          store.put(obj); //update it
           return tx.complete;
         }).then(function () {
           console.log('item updated!');
         });
-
+        
         button.value = "Favorite restaurant"; //change the value of the button
       } else {
         const postData = {"is_favorite": true}; //data to send to the server
         postMethod(`http://localhost:1337/restaurants/${parseInt(getParameterByName('id'))}`, postData); //use the postMethod function
-
+        
         //idb update the is_favorite entry
         dbPromise.then(function (db) {
           var tx = db.transaction('restaurants', 'readwrite');
           var store = tx.objectStore('restaurants');
-          obj.is_favorite = true;
-          store.put(obj);
+          obj.is_favorite = true; //set the is_favorite to true
+          store.put(obj); //update it
           return tx.complete;
         }).then(function () {
           console.log('item updated!');
         });
-
+        
         button.value = "Unfavorite restaurant"; //change the value of the button
       }
     }
   });
 }
-favoriteButton();
+favoriteButton(); //calling the function so that it's executed
+
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
  */
@@ -190,7 +217,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
     const day = document.createElement('td');
     day.innerHTML = key;
     row.appendChild(day);
-
+    
     const time = document.createElement('td');
     time.innerHTML = operatingHours[key];
     row.appendChild(time);
@@ -202,16 +229,16 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+fillReviewsHTML = (reviews  = self.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h3');
   title.innerHTML = 'Reviews';
   container.appendChild(title);
-
+  
   if (!reviews) {
     const noReviews = document.createElement('p');
     noReviews.innerHTML = 'No reviews yet!';
-
+    
     container.appendChild(noReviews);
     return;
   }
@@ -229,16 +256,16 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 createReviewHTML = (review) => {
   const li = document.createElement('li');
   li.tabindex = "0";
-
+  
   const reviewsBanner = document.createElement('div'); //creating the black banner with Name and date
   reviewsBanner.className = 'reviews-banner'; //giving it a class
   li.appendChild(reviewsBanner); //appending it to the li
-
+  
   const name = document.createElement('p');
   name.id = 'reviews-name';
   name.innerHTML = review.name;
   reviewsBanner.appendChild(name);
-
+  
   const date = document.createElement('p');
   date.id = 'reviews-date';
   date.innerHTML = review.date;
@@ -247,85 +274,70 @@ createReviewHTML = (review) => {
   const reviewsInfo = document.createElement('div'); //creating div which contains the rating and comment of the restaurant
   reviewsInfo.className = 'reviews-info'; //giving it a class
   li.appendChild(reviewsInfo); //appending it to the li
-
+  
   const rating = document.createElement('p');
   rating.id = 'rating';
   rating.innerHTML = `Rating: ${review.rating}`;
   reviewsInfo.appendChild(rating);
-
+  
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
   reviewsInfo.appendChild(comments);
-
+  
   li.tabIndex = "0";
   return li;
 }
 
-//
-// I'm having a problem with form submission and then reading the data from the DB
-//
+addReviews = () => {
+  const submit = document.getElementById("userSubmit"); //get the submit button
+  const id = parseInt(getParameterByName('id')); //get the id of the restaurant
+  
+  /*
+  
+  IGNORE THIS
+  ------
+  const months = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+]; //an array of each month name
+var currentDate = new Date(); //create a new date obj
 
-/*
+var date = currentDate.getDate(); //get the current date
+var month = currentDate.getMonth(); //get the current month number
+var year = currentDate.getFullYear(); //get the current year
 
-Every time an user submits the form data, the request goes successfully. The review is added to the indexedDB and server as well. But the problem occurs when I want to add another review. The previous one suddenly gets deleted. What should I do? Thanks
-
+var dateString = months[month] + " " + date + ", " + year; //concat the date, month and year together - the output is - "Month Date, Year" -> "July 18, 2018"
 */
 
-addReviews = () => {
-  const submit = document.getElementById("userSubmit");
-  const id = parseInt(getParameterByName('id'));
-
-  const months = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ]; //an array of each month name
-  var currentDate = new Date(); //create a new date obj
-
-  var date = currentDate.getDate(); //get the current date
-  var month = currentDate.getMonth(); //get the current month number
-  var year = currentDate.getFullYear(); //get the current year
-
-  var dateString = months[month] + " " + date + ", " + year; //concat the date, month and year together - the output is - "Month Date, Year" -> "July 18, 2018"
-  //fetch - post method function
-  //read/write to idb
-  dbPromise.then(db => {
-    return db.transaction('restaurants', 'readwrite')
-      .objectStore('restaurants').get(parseInt(getParameterByName('id')));
-  }).then(function (obj) {
-
-    //when the button is clicked, do this
-    submit.addEventListener("click", function (event) {
-      event.preventDefault();
-      const postData = {
-        "restaurant_id": id,
-        "name": document.getElementById("userName").value,
-        "rating": document.getElementById("userRating").value,
-        "comments": document.getElementById("userReview").value
-      };
-
-      postMethod(`http://localhost:1337/reviews/`, postData); //use the postMethod function
-      
-      //idb add review entry (form data)
-      dbPromise.then(function (db) {
-        var tx = db.transaction('restaurants', 'readwrite');
-        var store = tx.objectStore('restaurants');
-        obj.reviews = [postData];
-        store.put(obj);
-        return tx.complete;
-      }).then(function () {
-        console.log('Review added!');
-      });
-    })
-  });
+//fetch - post method function
+//read/write to idb
+dbPromise.then(db => {
+  return db.transaction('reviews', 'readwrite')
+  .objectStore('reviews').get(parseInt(getParameterByName('id')));
+}).then(function (obj) {
+  
+  //when the button is clicked, do this
+  submit.addEventListener("click", function (event) {
+    event.preventDefault();
+    const postData = {
+      "restaurant_id": id,
+      "name": document.getElementById("userName").value,
+      "rating": document.getElementById("userRating").value,
+      "comments": document.getElementById("userReview").value
+    };
+    
+    postMethod(`http://localhost:1337/reviews/`, postData); //use the postMethod function
+    
+    //idb add review entry (form data)
+    dbPromise.then(function (db) {
+      var tx = db.transaction('reviews', 'readwrite');
+      var store = tx.objectStore('reviews');
+      obj.reviews = [postData];
+      store.put(obj);
+      return tx.complete;
+    }).then(function () {
+      console.log('Review added!'); //Review added in the console
+    });
+  })
+});
 }
 addReviews();
-/**
- * Add restaurant name to the breadcrumb navigation menu
- */
-fillBreadcrumb = (restaurant = self.restaurant) => {
-  const breadcrumb = document.getElementById('breadcrumb');
-  breadcrumb.tabIndex = "0";
-  const li = document.createElement('li');
-  li.tabIndex = "0";
-  li.innerHTML = restaurant.name;
-  breadcrumb.appendChild(li);
-}
