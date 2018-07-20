@@ -25,9 +25,9 @@ const dbPromise = idb.open('restaurantsDB', 3, upgradeDB => {
         keyPath: 'id'
       });
     case 1:
-      upgradeDB.createObjectStore('reviews', {
-        keyPath: 'id'
-      });
+    upgradeDB.createObjectStore('reviews', {
+      keyPath: 'id'
+    });
   }
 });
 
@@ -44,22 +44,17 @@ window.initMap = () => {
         center: restaurant.latlng,
         scrollwheel: false
       });
-      fillBreadcrumb();
+      const breadcrumbFind = document.getElementById("restaurantNameBreadcrumb");
+      if (breadcrumbFind) {
+        console.log("exists");
+        return;
+      } else {
+        console.log("doesn't exist");
+        fillBreadcrumb();
+      }
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
-}
-
-/**
- * Add restaurant name to the breadcrumb navigation menu
- */
-fillBreadcrumb = (restaurant = self.restaurant) => {
-  const breadcrumb = document.getElementById('breadcrumb');
-  breadcrumb.tabIndex = "0";
-  const li = document.createElement('li');
-  li.tabIndex = "0";
-  li.innerHTML = restaurant.name;
-  breadcrumb.appendChild(li);
 }
 
 /**
@@ -81,17 +76,17 @@ fetchRestaurantFromURL = (callback) => {
         console.error(error);
         return;
       }
+      DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
+        self.reviews = reviews;
+        if (!reviews) {
+          console.error(error);
+          return;
+        }
+        fillReviewsHTML(reviews);
+        callback(null, reviews)
+      });
       fillRestaurantHTML();
       callback(null, restaurant)
-    });
-    DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
-      self.reviews = reviews;
-      if (!reviews) {
-        console.error(error);
-        return;
-      }
-      fillReviewsHTML(reviews);
-      callback(null, reviews)
     });
   }
 }
@@ -100,7 +95,7 @@ fetchRestaurantFromURL = (callback) => {
  * Create restaurant HTML and add it to the webpage
  */
 fillRestaurantHTML = (restaurant = self.restaurant) => {
-
+  
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
   
@@ -213,7 +208,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
   for (let key in operatingHours) {
     const row = document.createElement('tr');
     row.tabIndex = "0";
-
+    
     const day = document.createElement('td');
     day.innerHTML = key;
     row.appendChild(day);
@@ -221,7 +216,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
     const time = document.createElement('td');
     time.innerHTML = operatingHours[key];
     row.appendChild(time);
-
+    
     hours.appendChild(row);
   }
 }
@@ -247,7 +242,7 @@ fillReviewsHTML = (reviews  = self.reviews) => {
     ul.appendChild(createReviewHTML(review));
   });
   container.appendChild(ul);
-
+  
 }
 
 /**
@@ -270,7 +265,7 @@ createReviewHTML = (review) => {
   date.id = 'reviews-date';
   date.innerHTML = review.date;
   reviewsBanner.appendChild(date);
-
+  
   const reviewsInfo = document.createElement('div'); //creating div which contains the rating and comment of the restaurant
   reviewsInfo.className = 'reviews-info'; //giving it a class
   li.appendChild(reviewsInfo); //appending it to the li
@@ -341,3 +336,16 @@ dbPromise.then(db => {
 });
 }
 addReviews();
+/**
+ * Add restaurant name to the breadcrumb navigation menu
+ */
+
+fillBreadcrumb = (restaurant = self.restaurant) => {
+  const breadcrumb = document.getElementById('breadcrumb');
+  breadcrumb.tabIndex = "0";
+  const li = document.createElement('li');
+  li.tabIndex = "0";
+  li.innerHTML = restaurant.name;
+  li.setAttribute("id", "restaurantNameBreadcrumb");
+  breadcrumb.appendChild(li);
+}

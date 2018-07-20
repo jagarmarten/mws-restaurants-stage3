@@ -232,29 +232,39 @@ class DBHelper {
     });
     return marker;
   }
+
+
   /**
    * Reviews URL.
    * Change this to restaurants.json file location on your server.
    */
-
+  
   static get REVIEWS_URL() {
     const port = 1337 // Change this to your server port
     return `http://localhost:${port}/reviews/?restaurant_id=`;
   }
   
   /**
-   * Fetch all reviews.
+   * Fetch reviews for the current restaurant
    */
   static fetchReviews(callback) {
+    //if the user is online then either fetch from server or from idb BUT if the user's offline then only fetch data from idb
     if (navigator.onLine) {
       dbPromise.then(db => {
         const tx = db.transaction('reviews', 'readwrite');
         var keyValStore = tx.objectStore('reviews');
-  
+        
         return keyValStore.getAll();
       }).then((values) => {
-        if (values.length == 0) {
-          //fetch data with Fetch API
+        
+        //find all reviews with the restaurant_id the same as the id in the URL - this is gonna be used later for the if/else statement
+        const byRestaurantId = id => value => value.restaurant_id == id;
+        const value = values.filter(byRestaurantId(getParameterByName('id')));
+        console.log(value);
+
+        //if there are currently no reviews for the restaurant, then fetch them from the server. If there are, then fetch them from the idb - this is way faster!
+        if(value == 0) {
+          console.log("fetching from server"); //logging the way the app is getting the reviews
           fetch(DBHelper.REVIEWS_URL + getParameterByName('id'))
             .then(function (response) {
               return response.json();
@@ -277,6 +287,7 @@ class DBHelper {
               callback(error, null);
             });
         } else {
+          console.log("fetching from idb"); //logging the way the app is getting the reviews
           dbPromise.then(db => {
             const tx = db.transaction('reviews', 'readwrite');
             var keyValStore = tx.objectStore('reviews');
@@ -286,7 +297,7 @@ class DBHelper {
             callback(null, reviews);
           });
         }
-      })
+      });
     } else {
       dbPromise.then(db => {
         const tx = db.transaction('reviews', 'readwrite');
@@ -311,14 +322,12 @@ class DBHelper {
         //const review = reviews.find(r => r.restaurant_id == id);
         const byRestaurantId = id => review => review.restaurant_id == id;
         const review = reviews.filter(byRestaurantId(id));
-
+        
         if (review) { // Got the review
           callback(null, review);
         } else { // Review does not exist in the database
           callback('Review does not exist', null);
         }
-        /*reviews.forEach(review => {
-        });*/
       }
     });
   }
