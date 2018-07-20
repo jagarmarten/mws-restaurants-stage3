@@ -81,17 +81,17 @@ fetchRestaurantFromURL = (callback) => {
         console.error(error);
         return;
       }
-      DBHelper.fetchReviewById(id, (error, review) => {
-        self.review = review;
-        if (!review) {
-          console.error(error);
-          return;
-        }
-        fillReviewsHTML(review);
-        callback(null, review)
-      });
       fillRestaurantHTML();
       callback(null, restaurant)
+    });
+    DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
+      self.reviews = reviews;
+      if (!reviews) {
+        console.error(error);
+        return;
+      }
+      fillReviewsHTML(reviews);
+      callback(null, reviews)
     });
   }
 }

@@ -302,19 +302,23 @@ class DBHelper {
   /**
    * Fetch a review by its ID.
    */
-  static fetchReviewById(id, callback) {
+  static fetchReviewsByRestaurantId(id, callback) {
     // fetch all reviews with proper error handling.
     DBHelper.fetchReviews((error, reviews) => {
       if (error) {
         callback(error, null);
       } else {
-        const review = reviews.find(r => r.id == id);
-        console.log(reviews);
+        //const review = reviews.find(r => r.restaurant_id == id);
+        const byRestaurantId = id => review => review.restaurant_id == id;
+        const review = reviews.filter(byRestaurantId(id));
+
         if (review) { // Got the review
           callback(null, review);
         } else { // Review does not exist in the database
           callback('Review does not exist', null);
         }
+        /*reviews.forEach(review => {
+        });*/
       }
     });
   }
