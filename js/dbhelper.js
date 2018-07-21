@@ -255,48 +255,30 @@ class DBHelper {
         var keyValStore = tx.objectStore('reviews');
         
         return keyValStore.getAll();
-      }).then((values) => {
-        
-        //find all reviews with the restaurant_id the same as the id in the URL - this is gonna be used later for the if/else statement
-        const byRestaurantId = id => value => value.restaurant_id == id;
-        const value = values.filter(byRestaurantId(getParameterByName('id')));
-        console.log(value);
-
-        //if there are currently no reviews for the restaurant, then fetch them from the server. If there are, then fetch them from the idb - this is way faster!
-        if(value == 0) {
-          console.log("fetching from server"); //logging the way the app is getting the reviews
-          fetch(DBHelper.REVIEWS_URL + getParameterByName('id'))
-            .then(function (response) {
-              return response.json();
-            })
-            .then(function (reviews) {
-  
-              dbPromise.then(db => {
-                const tx = db.transaction('reviews', 'readwrite');
-                var keyValStore = tx.objectStore('reviews');
-  
-                reviews.forEach(function (review) {
-                  keyValStore.put(review);
-                })
-  
-                return tx.complete;
-              }).then(() => console.log("Item added to the reviewsDB"));
-              callback(null, reviews);
-            }).catch(function (error) {
-              console.log("Houston, we had an error!", error);
-              callback(error, null);
-            });
-        } else {
-          console.log("fetching from idb"); //logging the way the app is getting the reviews
+      }).then(() => {
+        //if the user's online then automatically fetch from the server and store it to the idb - this way the data's always gonna be fresh!
+        console.log("fetching from server"); //logging the way the app is getting the reviews
+        fetch(DBHelper.REVIEWS_URL + getParameterByName('id'))
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (reviews) {
+          
           dbPromise.then(db => {
             const tx = db.transaction('reviews', 'readwrite');
             var keyValStore = tx.objectStore('reviews');
-            return keyValStore.getAll();
-          }).then((reviews) => {
-            console.log("Fetching from reviewsDB");
-            callback(null, reviews);
-          });
-        }
+
+            reviews.forEach(function (review) {
+              keyValStore.put(review);
+            })
+            
+            return tx.complete;
+          }).then(() => console.log("Item added to the reviewsDB"));
+          callback(null, reviews);
+        }).catch(function (error) {
+          console.log("Houston, we had an error!", error);
+          callback(error, null);
+        });
       });
     } else {
       dbPromise.then(db => {
@@ -308,6 +290,47 @@ class DBHelper {
         callback(null, reviews);
       });
     }
+
+    //find all reviews with the restaurant_id the same as the id in the URL - this is gonna be used later for the if/else statement
+    /*const byRestaurantId = id => value => value.restaurant_id == id;
+    const value = values.filter(byRestaurantId(getParameterByName('id')));
+    console.log(value);*/
+    //if there are currently no reviews for the restaurant, then fetch them from the server. If there are, then fetch them from the idb - this is way faster!
+    /*if(value == 0) {
+      console.log("fetching from server"); //logging the way the app is getting the reviews
+      fetch(DBHelper.REVIEWS_URL + getParameterByName('id'))
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (reviews) {
+  
+          dbPromise.then(db => {
+            const tx = db.transaction('reviews', 'readwrite');
+            var keyValStore = tx.objectStore('reviews');
+  
+            reviews.forEach(function (review) {
+              keyValStore.put(review);
+            })
+  
+            return tx.complete;
+          }).then(() => console.log("Item added to the reviewsDB"));
+          callback(null, reviews);
+        }).catch(function (error) {
+          console.log("Houston, we had an error!", error);
+          callback(error, null);
+        });
+    } else {
+      console.log("fetching from idb"); //logging the way the app is getting the reviews
+      dbPromise.then(db => {
+        const tx = db.transaction('reviews', 'readwrite');
+        var keyValStore = tx.objectStore('reviews');
+        return keyValStore.getAll();
+      }).then((reviews) => {
+        console.log("Fetching from reviewsDB");
+        callback(null, reviews);
+      });
+    }
+  });*/
   }
   
   /**

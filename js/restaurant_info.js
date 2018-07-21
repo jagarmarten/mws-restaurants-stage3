@@ -321,17 +321,23 @@ dbPromise.then(db => {
     };
     
     postMethod(`http://localhost:1337/reviews/`, postData); //use the postMethod function
+    location.reload(); //reload the website after successful POST request
     
+    //I'm not sure if I also have to upload the data to the IDB because it's always retrieved from the server
+    //I'm still gonna keep it here if I'll ever need it in the future
+    //
+    //
     //idb add review entry (form data)
-    dbPromise.then(function (db) {
+    /*dbPromise.then(function (db) {
       var tx = db.transaction('reviews', 'readwrite');
       var store = tx.objectStore('reviews');
-      obj.reviews = [postData];
-      store.put(obj);
+      //obj = [postData];
+      console.log(postData);
+      store.put(postData);
       return tx.complete;
     }).then(function () {
       console.log('Review added!'); //Review added in the console
-    });
+    });*/
   })
 });
 }
