@@ -1,7 +1,7 @@
 
 // sw.js
 
-const cacheName = 'v35';
+const cacheName = 'v36';
 const filesToCache = [
     'sw.js',
     './',
@@ -56,9 +56,7 @@ self.addEventListener("activate", function (event) {
 
 self.addEventListener("fetch", (event) => {
     console.log("[ServiceWorker] Fetch");
-
-    //const referrerURL = event.request.referrer;
-    //console.log(event);
+    
     const requestUrl = new URL(event.request.url);
     if (requestUrl.pathname.startsWith('/restaurant.html')) {
         event.respondWith(caches.match('/restaurant.html'));
@@ -70,35 +68,6 @@ self.addEventListener("fetch", (event) => {
         })
     );
 });
-
-/*
-//fetch event - it caches all of the network requests
-self.addEventListener('fetch', (event) => {
-    console.info('Event: Fetch');
-
-    var request = event.request;
-
-    //Tell the browser to wait for newtwork request and respond with below
-    event.respondWith(
-        //If request is already in cache, return it
-        caches.match(request).then((response) => {
-            if (response) {
-                return response;
-            }
-
-            //if request is not cached, add it to cache
-            return fetch(request).then((response) => {
-                var responseToCache = response.clone();
-                caches.open(cacheName).then((cache) => {
-                    cache.put(request, responseToCache);
-                });
-
-                return response;
-            });
-        })
-    );
-});*/
-
 
 /*these tutorials helped me the most: https://developers.google.com/web/ilt/pwa/caching-files-with-service-worker-slides and https://www.youtube.com/watch?v=BfL3pprhnms
     https://github.com/GoogleChromeLabs/sw-toolbox/issues/227

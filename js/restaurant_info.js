@@ -32,32 +32,6 @@ const dbPromise = idb.open('restaurantsDB', 3, upgradeDB => {
 });
 
 /**
- * Initialize Google map, called from HTML.
- */
-window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      const breadcrumbFind = document.getElementById("restaurantNameBreadcrumb");
-      if (breadcrumbFind) {
-        console.log("exists");
-        return;
-      } else {
-        console.log("doesn't exist");
-        fillBreadcrumb();
-      }
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
-  });
-}
-
-/**
  * Get current restaurant from page URL.
  */
 fetchRestaurantFromURL = (callback) => {
@@ -76,17 +50,17 @@ fetchRestaurantFromURL = (callback) => {
         console.error(error);
         return;
       }
-      DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
-        self.reviews = reviews;
-        if (!reviews) {
-          console.error(error);
-          return;
-        }
-        fillReviewsHTML(reviews);
-        callback(null, reviews)
-      });
       fillRestaurantHTML();
       callback(null, restaurant)
+    });
+    DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
+      self.reviews = reviews;
+      if (!reviews) {
+        console.error(error);
+        return;
+      }
+      fillReviewsHTML(reviews);
+      callback(null, reviews)
     });
   }
 }
@@ -354,4 +328,31 @@ fillBreadcrumb = (restaurant = self.restaurant) => {
   li.innerHTML = restaurant.name;
   li.setAttribute("id", "restaurantNameBreadcrumb");
   breadcrumb.appendChild(li);
+}
+
+/**
+ * Initialize Google map, called from HTML.
+ */
+window.initMap = () => {
+  fetchRestaurantFromURL((error, restaurant) => {
+    if (error) { // Got an error!
+      console.error(error);
+    } else {
+      self.map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 16,
+        center: restaurant.latlng,
+        scrollwheel: false
+      });
+      /*const breadcrumbFind = document.getElementById("restaurantNameBreadcrumb");
+      if (breadcrumbFind) {
+        console.log("exists");
+        return;
+      } else {
+        console.log("doesn't exist");
+        fillBreadcrumb();
+      }*/
+      fillBreadcrumb();
+      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+    }
+  });
 }

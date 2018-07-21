@@ -96,30 +96,34 @@
   <!-- End footer -->
 
   <script>
-  //checing if there is service worker registered, if not we'll register it
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-      .register('./sw.js', {
-        scope: './'
-      }) //link to the our service worker file; scope is the root directory
-      .then(function (registration) {
-        console.log('Service Worker Registered');
-      }) //if the registration was successful, return the registration details to the console
-      .catch(function (error) {
-        console.log('Service Worker Failed to Register', error);
-      }); //if there was an error, return the error to the console
-  }
-    window.addEventListener("beforeinstallprompt", function(e) { 
-    // log the platforms provided as options in an install prompt 
-    console.log(e.platforms); // e.g., ["web", "android", "windows"] 
-    e.userChoice.then(function(outcome) { 
-      console.log(outcome); // either "accepted" or "dismissed"
-    }, handleError); 
-  });</script>
+    //checing if there is service worker registered, if not we'll register it
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('./sw.js', {
+          scope: './'
+        }) //link to the our service worker file; scope is the root directory
+        .then(function (registration) {
+          console.log('Service Worker Registered');
+        }) //if the registration was successful, return the registration details to the console
+        .catch(function (error) {
+          console.log('Service Worker Failed to Register', error);
+        }); //if there was an error, return the error to the console
+    }
+    window.addEventListener("beforeinstallprompt", function (e) {
+      // log the platforms provided as options in an install prompt 
+      console.log(e.platforms); // e.g., ["web", "android", "windows"] 
+      e.userChoice.then(function (outcome) {
+        console.log(outcome); // either "accepted" or "dismissed"
+      }, handleError);
+    });
+  </script>
   <script src="./lib/idb.js"></script>
   <script type="application/javascript" charset="utf-8" src="./js/dbhelper.js"></script>
   <script type="application/javascript" charset="utf-8" src="./js/restaurant_info.js"></script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDKwqxSWD39Hq7LWG4QEam-OgC5fYNRKMQ&callback=initMap" type="text/javascript"></script>
+  <script src="./js/echo.min.js"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDKwqxSWD39Hq7LWG4QEam-OgC5fYNRKMQ&callback=initMap"
+    type="text/javascript"></script>
+
 
 </body>
 
