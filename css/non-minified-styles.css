@@ -430,15 +430,23 @@ h3 {
     margin: 0 0 10px;
 }
 
-#reviews-list li .reviews-info #rating {
+#reviews-list li .reviews-info #rating,
+#reviews-list li .reviews-info #offlineBadge {
     width: 70px;
     padding: 2.5px 10px;
     border-radius: 5px;
     text-align: center;
     color: #fff;
-    background-color: #FFA500;
     font-weight: bold;
     text-transform: uppercase;
+}
+
+#reviews-list li .reviews-info #rating {
+    background-color: #FFA500;
+}
+
+#reviews-list li .reviews-info #offlineBadge {
+    background-color: #E84F21;
 }
 
 #restaurant-hours td {

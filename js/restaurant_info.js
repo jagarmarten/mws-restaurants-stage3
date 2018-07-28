@@ -234,10 +234,11 @@ createReviewHTML = (review) => {
   name.id = 'reviews-name';
   name.innerHTML = review.name;
   reviewsBanner.appendChild(name);
-  
+
   const date = document.createElement('p');
   date.id = 'reviews-date';
-  date.innerHTML = review.date;
+  const reviewDate = new Date(review.createdAt);
+  date.innerHTML = reviewDate.toDateString();
   reviewsBanner.appendChild(date);
   
   const reviewsInfo = document.createElement('div'); //creating div which contains the rating and comment of the restaurant
@@ -260,22 +261,6 @@ createReviewHTML = (review) => {
 addReviews = () => {
   const submit = document.getElementById("userSubmit"); //get the submit button
   const id = parseInt(getParameterByName('id')); //get the id of the restaurant
-  
-  /*
-  
-  IGNORE THIS
-  ------
-  const months = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-]; //an array of each month name
-var currentDate = new Date(); //create a new date obj
-
-var date = currentDate.getDate(); //get the current date
-var month = currentDate.getMonth(); //get the current month number
-var year = currentDate.getFullYear(); //get the current year
-
-var dateString = months[month] + " " + date + ", " + year; //concat the date, month and year together - the output is - "Month Date, Year" -> "July 18, 2018"
-*/
 
 //fetch - post method function
 //read/write to idb
@@ -291,27 +276,15 @@ dbPromise.then(db => {
       "restaurant_id": id,
       "name": document.getElementById("userName").value,
       "rating": document.getElementById("userRating").value,
-      "comments": document.getElementById("userReview").value
+      "comments": document.getElementById("userReview").value,
+      "createdAt": Date.now(),
+      "updatedAt": Date.now()
     };
-    
-    postMethod(`http://localhost:1337/reviews/`, postData); //use the postMethod function
-    location.reload(); //reload the website after successful POST request
-    
-    //I'm not sure if I also have to upload the data to the IDB because it's always retrieved from the server
-    //I'm still gonna keep it here if I'll ever need it in the future
-    //
-    //
-    //idb add review entry (form data)
-    /*dbPromise.then(function (db) {
-      var tx = db.transaction('reviews', 'readwrite');
-      var store = tx.objectStore('reviews');
-      //obj = [postData];
-      console.log(postData);
-      store.put(postData);
-      return tx.complete;
-    }).then(function () {
-      console.log('Review added!'); //Review added in the console
-    });*/
+    //location.reload(); //reload the website after successful POST request
+
+    DBHelper.addNewReview(postData);
+    //createReviewHTML(postData);
+    document.getElementById("userReviewForm").reset();
   })
 });
 }
@@ -343,14 +316,6 @@ window.initMap = () => {
         center: restaurant.latlng,
         scrollwheel: false
       });
-      /*const breadcrumbFind = document.getElementById("restaurantNameBreadcrumb");
-      if (breadcrumbFind) {
-        console.log("exists");
-        return;
-      } else {
-        console.log("doesn't exist");
-        fillBreadcrumb();
-      }*/
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }

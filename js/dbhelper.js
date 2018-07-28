@@ -23,7 +23,7 @@ class DBHelper {
    */
   static get DATABASE_URL() {
     const port = 1337 // Change this to your server port
-    return `http://localhost:${port}/restaurants/`;
+    return `http://localhost:${port}/`;
   }
 
   /**
@@ -52,7 +52,7 @@ class DBHelper {
       }).then((values) => {
           if (values.length == 0) {
             //fetch data with Fetch API
-            fetch(DBHelper.DATABASE_URL)
+            fetch(DBHelper.DATABASE_URL + "restaurants/")
               .then(function (response) {
                   return response.json();
               })
@@ -233,17 +233,6 @@ class DBHelper {
     return marker;
   }
 
-
-  /**
-   * Reviews URL.
-   * Change this to restaurants.json file location on your server.
-   */
-  
-  static get REVIEWS_URL() {
-    const port = 1337 // Change this to your server port
-    return `http://localhost:${port}/reviews/?restaurant_id=`;
-  }
-  
   /**
    * Fetch reviews for the current restaurant
    */
@@ -258,7 +247,7 @@ class DBHelper {
       }).then(() => {
         //if the user's online then automatically fetch from the server and store it to the idb - this way the data's always gonna be fresh!
         console.log("fetching from server"); //logging the way the app is getting the reviews
-        fetch(DBHelper.REVIEWS_URL + getParameterByName('id'))
+        fetch(DBHelper.DATABASE_URL + "reviews/?restaurant_id=" + getParameterByName('id'))
         .then(function (response) {
           return response.json();
         })
@@ -351,6 +340,62 @@ class DBHelper {
         } else { // Review does not exist in the database
           callback('Review does not exist', null);
         }
+      }
+    });
+  }
+
+  /**
+   * This is a post method function
+   */
+  static postMethod(url, data) {
+    //fetch with POST method
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(res => {
+        return res.json()
+      }).catch(error => console.error('Error:', error))
+      .then(response => console.log('Success:', response));
+  }
+
+  /**
+   * Add a new review (when the user's both online and offline)
+   */
+
+  //this helped a lot - https://docs.google.com/presentation/d/1i_b30OvHtmKXWI5oUknDIto5S2YnfJC619mYYq1QpJ4/edit#slide=id.g3da8a30f65_0_5
+  
+  static addNewReview(review) {
+    //if the user is offline then do this
+    if(!navigator.onLine) {
+      console.log("The website is offline"); //logging that the user is offline
+      DBHelper.sendWhenOnline(review); //calling the send when online function
+      return;
+    }
+
+    console.log("The website is online");
+    DBHelper.postMethod(DBHelper.DATABASE_URL + "reviews/", review); //use the postMethod function
+  }
+
+  /**
+   * This function is used every time a user goes offline and tries to submit form data
+   */
+  static sendWhenOnline(review) {
+    localStorage.setItem('data', JSON.stringify(review)); //create a new item in the local storage with review data
+    console.log(review);
+
+    //add event listener which looks for whether the user is online
+    window.addEventListener('online', () => {
+      let localStorageData = JSON.parse(localStorage.getItem('data')); //get the item stored in 'data'
+      console.log(localStorageData);
+
+      //if the local storage isn't empty, then addNewReview() func gets called and the item gets removed from the local storage
+      if (localStorageData !== null) {
+        console.log("Local storage data about to get removed"); //logging the action which's about to happen
+        DBHelper.addNewReview(localStorageData); //add new review
+        localStorage.removeItem('data'); //remove 'data' from local storage
       }
     });
   }
