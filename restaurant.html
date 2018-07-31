@@ -66,21 +66,27 @@
       <h3>Add a review</h3>
 
       <form id="userReviewForm" name="userReview">
-        User name:<br>
-        <input type="text" name="userName" id="userName" required><br>
-        Rating:<br>
-        <select required name="userRating" id="userRating">
+        <label for="userName">User name:</label>
+        <br>
+        <input type="text" name="userName" id="userName" required aria-label="User Name"><br>
+
+        <label for="userRating">Rating:</label>
+        <br>
+        <select required name="userRating" id="userRating" role="menu" aria-label="Select rating">
           <option value="0">Select:</option>
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
           <option value="5">5</option>
-        </select><br>
-        Review:<br>
+        </select>
+        <br>
+
+        <label for="userReview">Review:</label>
+        <br>
         <!--<input type="textarea" name="userReview" required=""><br><br>-->
-        <textarea name="userReview" rows="10" required id="userReview"></textarea><br><br>
-        <input type="submit" name="userReviewSubmit" value="Add review" id="userSubmit">
+        <textarea name="userReview" rows="10" required id="userReview" aria-label="Review text"></textarea>
+        <input type="submit" name="userReviewSubmit" value="Add review" id="userSubmit" aria-label="Submit review">
       </form>
     </section>
   </main>

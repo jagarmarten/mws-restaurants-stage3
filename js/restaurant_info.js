@@ -1,36 +1,21 @@
 let restaurant;
 var map;
 
-/**
- * Get a parameter by name from page URL.
- */
-getParameterByName = (name, url) => {
-  if (!url)
-    url = window.location.href;
-  name = name.replace(/[\[\]]/g, '\\$&');
-  const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
-    results = regex.exec(url);
-  if (!results)
-    return null;
-  if (!results[2])
-    return '';
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
-
 //open the IDB so that I could use it in this file as well
-const dbPromise = idb.open('restaurantsDB', 3, upgradeDB => {
+/*const dbPromise = idb.open('restaurantsDB', 3, upgradeDB => {
   switch (upgradeDB.oldVersion) {
     case 0:
       upgradeDB.createObjectStore('restaurants', {
         keyPath: 'id'
       });
     case 1:
-    upgradeDB.createObjectStore('reviews', {
-      keyPath: 'id'
-    });
+      const reviewsObjectStore = upgradeDB.createObjectStore('reviews', {
+        keyPath: 'id'
+      });
   }
-});
+});*/
 
+const id = DBHelper.getParameterByName('id'); //get the restaurant id
 /**
  * Get current restaurant from page URL.
  */
@@ -39,7 +24,6 @@ fetchRestaurantFromURL = (callback) => {
     callback(null, self.restaurant)
     return;
   }
-  const id = getParameterByName('id');
   if (!id) { // no id found in URL
     error = 'No restaurant id in URL'
     callback(error, null);
@@ -53,17 +37,20 @@ fetchRestaurantFromURL = (callback) => {
       fillRestaurantHTML();
       callback(null, restaurant)
     });
-    DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
-      self.reviews = reviews;
-      if (!reviews) {
-        console.error(error);
-        return;
-      }
-      fillReviewsHTML(reviews);
-      callback(null, reviews)
-    });
   }
 }
+
+fetchReviewsFromURL = () => {
+  DBHelper.fetchReviewsByRestaurantId(id, (error, review) => {
+    self.review = review;
+    if (!review) {
+      console.error(error);
+      return;
+    }
+    fillReviewsHTML(review);
+  });
+}
+fetchReviewsFromURL();
 
 /**
  * Create restaurant HTML and add it to the webpage
@@ -89,10 +76,38 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-  // fill reviews
-  //fillReviewsHTML();
+
+  const section = document.getElementById("restaurant-container"); //get the section
+  changeFavoriteButtonClass = (element, favorite) => {
+    if (!favorite) {
+      element.classList.remove("favorite-true");
+      element.classList.add("favorite-false");
+      element.setAttribute("aria-label", "Set this restaurant as your favorite");
+      console.log("Changed to false");
+    } else {
+      element.classList.remove("favorite-false");
+      element.classList.add("favorite-true");
+      element.setAttribute("aria-label", "Remove this restaurant as your favorite");
+      console.log("Changed to true");
+    }
+  }
+
+  let button = document.createElement('input'); //create new input element
+  button.setAttribute('type', 'button'); //make this input of type button
+  button.value = "❤";
+  button.classList.add("button-favorite");
+  button.onclick = function () {
+    const favorite = !restaurant.is_favorite;
+    console.log(favorite);
+    DBHelper.favoriteButtonUpdate(restaurant.id, favorite);
+    restaurant.is_favorite = !restaurant.is_favorite; //assigning it an opposite value
+    changeFavoriteButtonClass(button, restaurant.is_favorite);
+  }
+  changeFavoriteButtonClass(button, restaurant.is_favorite);
+  section.append(button); //add the button to the li
 }
 
+/*
 //universal postMethod()
 let postMethod = (url, data) => {
   //fetch with POST method
@@ -108,9 +123,9 @@ let postMethod = (url, data) => {
   .then(response => console.log('Success:', response));
 }
 
-/**
- * Creating the new favorite button
- */
+
+//Creating the new favorite button
+
 favoriteButton = () => {
   const section = document.getElementById("restaurant-container"); //get the section
   
@@ -125,7 +140,7 @@ favoriteButton = () => {
   //read/write to idb
   dbPromise.then(db => {
     return db.transaction('restaurants', 'readwrite')
-    .objectStore('restaurants').get(parseInt(getParameterByName('id')));
+    .objectStore('restaurants').get(parseInt(DBHelper.getParameterByName('id')));
   }).then(function (obj) {
     if (obj.is_favorite == true) {
       button.value = "Unfavorite restaurant"; //set the initial value of the button
@@ -138,7 +153,7 @@ favoriteButton = () => {
       //if the resturant is currently favorite run this if the restaurant isn't favorite then execute the code in else
       if (obj.is_favorite == true) {
         const postData = {"is_favorite": false}; //data to send to the server
-        postMethod(`http://localhost:1337/restaurants/${parseInt(getParameterByName('id'))}`, postData); //use the postMethod function
+        postMethod(`http://localhost:1337/restaurants/${parseInt(DBHelper.getParameterByName('id'))}`, postData); //use the postMethod function
         
         //idb update the is_favorite entry
         dbPromise.then(function (db) {
@@ -154,7 +169,7 @@ favoriteButton = () => {
         button.value = "Favorite restaurant"; //change the value of the button
       } else {
         const postData = {"is_favorite": true}; //data to send to the server
-        postMethod(`http://localhost:1337/restaurants/${parseInt(getParameterByName('id'))}`, postData); //use the postMethod function
+        postMethod(`http://localhost:1337/restaurants/${parseInt(DBHelper.getParameterByName('id'))}`, postData); //use the postMethod function
         
         //idb update the is_favorite entry
         dbPromise.then(function (db) {
@@ -173,6 +188,7 @@ favoriteButton = () => {
   });
 }
 favoriteButton(); //calling the function so that it's executed
+*/
 
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
@@ -222,6 +238,8 @@ fillReviewsHTML = (reviews  = self.reviews) => {
 /**
  * Create review HTML and add it to the webpage.
  */
+
+ //try creating a !navigator.onLine and try to get the data from the local storage. Maybe this'll work.
 createReviewHTML = (review) => {
   const li = document.createElement('li');
   li.tabindex = "0";
@@ -249,6 +267,19 @@ createReviewHTML = (review) => {
   rating.id = 'rating';
   rating.innerHTML = `Rating: ${review.rating}`;
   reviewsInfo.appendChild(rating);
+
+  if(!navigator.onLine) {
+    console.log("offline");
+    const offline = document.createElement('p');
+    offline.id = 'offlineBadge';
+    offline.innerHTML = `Offline`;
+    reviewsInfo.appendChild(offline);
+  } else {
+    //const offlineBadge = document.
+    if(document.getElementById('offlineBadge')) {
+      reviewsInfo.removeChild(document.getElementById('offlineBadge'));
+    }
+  }
   
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
@@ -260,35 +291,60 @@ createReviewHTML = (review) => {
 
 addReviews = () => {
   const submit = document.getElementById("userSubmit"); //get the submit button
-  const id = parseInt(getParameterByName('id')); //get the id of the restaurant
+  const id = parseInt(DBHelper.getParameterByName('id')); //get the id of the restaurant
 
-//fetch - post method function
-//read/write to idb
-dbPromise.then(db => {
-  return db.transaction('reviews', 'readwrite')
-  .objectStore('reviews').get(parseInt(getParameterByName('id')));
-}).then(function (obj) {
-  
-  //when the button is clicked, do this
-  submit.addEventListener("click", function (event) {
-    event.preventDefault();
-    const postData = {
-      "restaurant_id": id,
-      "name": document.getElementById("userName").value,
-      "rating": document.getElementById("userRating").value,
-      "comments": document.getElementById("userReview").value,
-      "createdAt": Date.now(),
-      "updatedAt": Date.now()
-    };
-    //location.reload(); //reload the website after successful POST request
+  //fetch - post method function
+  //read/write to idb
+  /*dbPromise.then(db => {
+    return db.transaction('reviews', 'readwrite')
+    .objectStore('reviews').get(parseInt(DBHelper.getParameterByName('id')));
+  }).then(function (obj) {*/
+    
+    //when the button is clicked, do this
+    submit.addEventListener("click", function (event) {
+      event.preventDefault();
+      const postData = {
+        "restaurant_id": id,
+        "name": document.getElementById("userName").value,
+        "rating": document.getElementById("userRating").value,
+        "comments": document.getElementById("userReview").value,
+        "createdAt": Date.now(),
+        "updatedAt": Date.now()
+      };
+      //location.reload(); //reload the website after successful POST request
 
-    DBHelper.addNewReview(postData);
-    //createReviewHTML(postData);
-    document.getElementById("userReviewForm").reset();
-  })
-});
+      //idb update the is_favorite entry
+      /*dbPromise.then(function (db) {
+        var tx = db.transaction('reviews', 'readwrite');
+        var store = tx.objectStore('reviews');
+        store.put(postData); //update it
+        return tx.complete;
+      }).then(function () {
+        console.log('Review added to idb!');
+      });*/
+
+      DBHelper.addNewReview(postData);
+      //visually adding to the reviews on the website
+      addReviewToPage(postData);
+      document.getElementById("userReviewForm").reset();
+    });
+  //});
 }
 addReviews();
+
+addReviewToPage = (data) => {
+  const ul = document.getElementById('reviews-list');
+  ul.appendChild(createReviewHTML(data));
+  /*if(!navigator.onLine) {
+    console.log("online");
+    const reviewsInfo = document.getElementsByClassName("reviews-info");
+    const offline = document.createElement('p');
+    offline.id = 'offlineBadge';
+    offline.innerHTML = `Offline`;
+    reviewsInfo.appendChild(offline);
+  }*/
+}
+
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */

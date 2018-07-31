@@ -266,7 +266,7 @@ p {
     font-size: 11pt;
 }
 
-#restaurants-list li a {
+#restaurants-list li a, #userSubmit {
     background-color: #ffa500;
     border-bottom: 3px solid #eee;
     color: #fff;
@@ -279,7 +279,8 @@ p {
     text-transform: uppercase;
 }
 
-#restaurants-list li a:hover {
+#restaurants-list li a:hover,
+#userSubmit:hover {
     background-color: #e99904;
 }
 
@@ -556,4 +557,69 @@ responsivity edits
         margin: 10px auto 10px auto;
         display: block;
     }
+}
+
+/*
+Favorite button design
+*/
+
+input, textarea, select {
+    border: none;
+}
+
+.favorite-true,
+.favorite-false {
+    background-color: #fff;
+    border-radius: 50px;
+    color: #fff;
+    border: 2px solid #D91E18;
+    font-size: 25px;
+    margin-left: 7px;
+    position: relative;
+    top: 5.65px;
+    padding-top: 3px;
+    cursor: pointer;
+}
+
+.favorite-true:hover,
+.favorite-false:hover {
+    background-color: #D98990;
+    color: #fff;
+    border: 2px solid #D98990;
+}
+
+.favorite-true {
+    background-color: #D91E18;
+    color: #fff;
+}
+
+.favorite-false {
+    color: #D91E18;
+    background-color: #fff;
+}
+
+#userReviewForm label {
+    margin: 0;
+    color: #000;
+    font-size: 15px;
+}
+
+#userRating, #userName {
+    padding: 5px 10px;
+    background-color: #fff;
+}
+
+#userReview {
+    padding: 5px 0;
+}
+
+#userName,
+#userRating,
+#userReview {
+    margin: 5px 0 10px 0;
+}
+
+#userSubmit {
+    text-align: right;
+    cursor: pointer;
 }

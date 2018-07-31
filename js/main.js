@@ -162,24 +162,56 @@ createRestaurantHTML = (restaurant) => {
   const name = document.createElement('h2');
   name.innerHTML = restaurant.name;
   li.append(name);
-
+  
+  
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
   li.append(neighborhood);
-
+  
   const address = document.createElement('p');
   address.innerHTML = restaurant.address;
   li.append(address);
-
+  
+  
   const more = document.createElement('a');
   more.innerHTML = 'View Details';
   more.tabIndex = "0";
   more.className = "restaurant-selection-button";
   more.href = DBHelper.urlForRestaurant(restaurant);
   li.append(more)
+  
+  //my code didn't work properly on index.html so I instead used the code from the MWS project 3 webinar. This shouldn't be understood as copying but I'm just using their concepts.
+  changeFavoriteButtonClass = (element, favorite) => {
+    if(!favorite) {
+      element.classList.remove("favorite-true");
+      element.classList.add("favorite-false");
+      element.setAttribute("aria-label", "Set this restaurant as your favorite");
+      console.log("Changed to false");
+    } else {
+      element.classList.remove("favorite-false");
+      element.classList.add("favorite-true");
+      element.setAttribute("aria-label", "Remove this restaurant as your favorite");
+      console.log("Changed to true");
+    }
+  }
+
+  let button = document.createElement('input'); //create new input element
+  button.setAttribute('type', 'button'); //make this input of type button
+  button.value = "❤";
+  button.classList.add("button-favorite");
+  button.onclick = function() {
+    const favorite = !restaurant.is_favorite;
+    console.log(favorite);
+    DBHelper.favoriteButtonUpdate(restaurant.id, favorite);
+    restaurant.is_favorite = !restaurant.is_favorite; //assigning it an opposite value
+    changeFavoriteButtonClass(button, restaurant.is_favorite);
+  }
+  changeFavoriteButtonClass(button, restaurant.is_favorite);
+  li.append(button); //add the button to the li
 
   return li
 }
+
 
 /**
  * Add markers for current restaurants to the map.

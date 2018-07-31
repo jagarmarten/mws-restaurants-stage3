@@ -14,6 +14,19 @@ getParameterByName = (name, url) => {
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
+const dbPromise = idb.open('restaurantsDB', 3, upgradeDB => {
+  switch (upgradeDB.oldVersion) {
+    case 0:
+      upgradeDB.createObjectStore('restaurants', {
+        keyPath: 'id'
+      });
+    case 1:
+      const reviewsObjectStore = upgradeDB.createObjectStore('reviews', {
+        keyPath: 'id'
+      });
+  }
+});
+
 /*Common database helper functions.*/
 class DBHelper {
 
@@ -30,18 +43,6 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    const dbPromise = idb.open('restaurantsDB', 3, upgradeDB => {
-      switch (upgradeDB.oldVersion) {
-        case 0:
-          upgradeDB.createObjectStore('restaurants', {
-            keyPath: 'id'
-          });
-        case 1:
-          upgradeDB.createObjectStore('reviews', {
-            keyPath: 'id'
-          });
-      }
-    });
 
     if (navigator.onLine) {
       dbPromise.then(db => {
@@ -362,6 +363,19 @@ class DBHelper {
   }
 
   /**
+   * This is a post method function
+   */
+  static putMethod(url, data) {
+    //fetch with POST method
+    fetch(url, {
+        method: 'PUT'
+      }).then(res => {
+        return res.json()
+      }).catch(error => console.error('Error:', error))
+      .then(response => console.log('Success:', response));
+  }
+
+  /**
    * Add a new review (when the user's both online and offline)
    */
 
@@ -369,9 +383,11 @@ class DBHelper {
   
   static addNewReview(review) {
     //if the user is offline then do this
+    
     if(!navigator.onLine) {
       console.log("The website is offline"); //logging that the user is offline
       DBHelper.sendWhenOnline(review); //calling the send when online function
+      //open the IDB so that I could use it in this file as well
       return;
     }
 
@@ -384,12 +400,15 @@ class DBHelper {
    */
   static sendWhenOnline(review) {
     localStorage.setItem('data', JSON.stringify(review)); //create a new item in the local storage with review data
-    console.log(review);
 
     //add event listener which looks for whether the user is online
     window.addEventListener('online', () => {
       let localStorageData = JSON.parse(localStorage.getItem('data')); //get the item stored in 'data'
       console.log(localStorageData);
+
+      if (document.getElementById('offlineBadge')) {
+        reviewsInfo.removeChild(document.getElementById('offlineBadge'));
+      }
 
       //if the local storage isn't empty, then addNewReview() func gets called and the item gets removed from the local storage
       if (localStorageData !== null) {
@@ -398,5 +417,48 @@ class DBHelper {
         localStorage.removeItem('data'); //remove 'data' from local storage
       }
     });
+  }
+
+  /**
+   * Get a parameter by name from page URL.
+   */
+  static getParameterByName(name, url) {
+    if (!url)
+      url = window.location.href;
+    name = name.replace(/[\[\]]/g, '\\$&');
+    const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
+      results = regex.exec(url);
+    if (!results)
+      return null;
+    if (!results[2])
+      return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  }
+
+  /**
+   * Change the value of the is_favorite when the button is pressed
+   */
+  static favoriteButtonUpdate(restaurant_id, value) {
+    DBHelper.putMethod(`http://localhost:1337/restaurants/${restaurant_id}/?is_favorite=${value}`, value); 
+    
+    dbPromise.then(db => {
+      return db.transaction('restaurants', 'readwrite')
+      .objectStore('restaurants');
+    }).then(function (obj) {
+      //idb update the is_favorite
+      dbPromise.then(function (db) {
+        var tx = db.transaction('restaurants', 'readwrite');
+        var store = tx.objectStore('restaurants');
+        //store.put(obj.restaurant_id); //update the restaurat_id
+        var getRestaurantFromIDB = store.get(restaurant_id)
+        getRestaurantFromIDB.then(function(object) {
+          object.is_favorite = value; //set the is_favorite the value we're passing in the main.js / 
+          store.put(object); //update it
+        }); 
+        return tx.complete;
+      }).then(function () {
+        console.log('item updated!');
+      });
+    })
   }
 }
