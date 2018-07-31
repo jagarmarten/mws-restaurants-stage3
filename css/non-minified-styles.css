@@ -414,12 +414,12 @@ h3 {
     color: #fff;
 }
 
-#reviews-list li .reviews-banner #reviews-name {
+#reviews-list li .reviews-banner .reviews-name {
     font-size: 12pt;
     font-weight: bold;
 }
 
-#reviews-list li .reviews-banner #reviews-date {
+#reviews-list li .reviews-banner .reviews-date {
     text-align: right;
 }
 
@@ -431,7 +431,7 @@ h3 {
     margin: 0 0 10px;
 }
 
-#reviews-list li .reviews-info #rating,
+#reviews-list li .reviews-info .rating,
 #reviews-list li .reviews-info #offlineBadge {
     width: 70px;
     padding: 2.5px 10px;
@@ -442,7 +442,7 @@ h3 {
     text-transform: uppercase;
 }
 
-#reviews-list li .reviews-info #rating {
+#reviews-list li .reviews-info .rating {
     background-color: #FFA500;
 }
 

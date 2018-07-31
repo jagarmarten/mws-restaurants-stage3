@@ -78,32 +78,19 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   }
 
   const section = document.getElementById("restaurant-container"); //get the section
-  changeFavoriteButtonClass = (element, favorite) => {
-    if (!favorite) {
-      element.classList.remove("favorite-true");
-      element.classList.add("favorite-false");
-      element.setAttribute("aria-label", "Set this restaurant as your favorite");
-      console.log("Changed to false");
-    } else {
-      element.classList.remove("favorite-false");
-      element.classList.add("favorite-true");
-      element.setAttribute("aria-label", "Remove this restaurant as your favorite");
-      console.log("Changed to true");
-    }
-  }
 
   let button = document.createElement('input'); //create new input element
   button.setAttribute('type', 'button'); //make this input of type button
-  button.value = "❤";
   button.classList.add("button-favorite");
-  button.onclick = function () {
-    const favorite = !restaurant.is_favorite;
-    console.log(favorite);
-    DBHelper.favoriteButtonUpdate(restaurant.id, favorite);
+  button.value = "❤";
+
+  button.addEventListener("click", function () {
+    DBHelper.favoriteButtonUpdate(restaurant.id, !restaurant.is_favorite);
     restaurant.is_favorite = !restaurant.is_favorite; //assigning it an opposite value
-    changeFavoriteButtonClass(button, restaurant.is_favorite);
-  }
-  changeFavoriteButtonClass(button, restaurant.is_favorite);
+    DBHelper.favoriteButtonChange(restaurant.is_favorite);
+  });
+
+  DBHelper.favoriteButtonChange(restaurant.is_favorite);
   section.append(button); //add the button to the li
 }
 
@@ -249,12 +236,12 @@ createReviewHTML = (review) => {
   li.appendChild(reviewsBanner); //appending it to the li
   
   const name = document.createElement('p');
-  name.id = 'reviews-name';
+  name.className = 'reviews-name';
   name.innerHTML = review.name;
   reviewsBanner.appendChild(name);
 
   const date = document.createElement('p');
-  date.id = 'reviews-date';
+  date.className = 'reviews-date';
   const reviewDate = new Date(review.createdAt);
   date.innerHTML = reviewDate.toDateString();
   reviewsBanner.appendChild(date);
@@ -264,7 +251,7 @@ createReviewHTML = (review) => {
   li.appendChild(reviewsInfo); //appending it to the li
   
   const rating = document.createElement('p');
-  rating.id = 'rating';
+  rating.className = 'rating';
   rating.innerHTML = `Rating: ${review.rating}`;
   reviewsInfo.appendChild(rating);
 

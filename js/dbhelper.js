@@ -380,10 +380,10 @@ class DBHelper {
    */
 
   //this helped a lot - https://docs.google.com/presentation/d/1i_b30OvHtmKXWI5oUknDIto5S2YnfJC619mYYq1QpJ4/edit#slide=id.g3da8a30f65_0_5
+  //https: //www.smashingmagazine.com/2010/10/local-storage-and-how-to-use-it/ - I also used this tutorial when learning how the localstorage works
   
   static addNewReview(review) {
     //if the user is offline then do this
-    
     if(!navigator.onLine) {
       console.log("The website is offline"); //logging that the user is offline
       DBHelper.sendWhenOnline(review); //calling the send when online function
@@ -399,11 +399,12 @@ class DBHelper {
    * This function is used every time a user goes offline and tries to submit form data
    */
   static sendWhenOnline(review) {
-    localStorage.setItem('data', JSON.stringify(review)); //create a new item in the local storage with review data
+    localStorage.setItem('reviewSubmit', JSON.stringify(review)); //create a new item in the local storage with review data
 
     //add event listener which looks for whether the user is online
     window.addEventListener('online', () => {
-      let localStorageData = JSON.parse(localStorage.getItem('data')); //get the item stored in 'data'
+      //let localStorageData = localStorage.getItem('reviewSubmit'); //get the item stored in 'reviewSubmit'
+      let localStorageData = JSON.parse(localStorage.getItem('reviewSubmit')); //get the item stored in 'reviewSubmit'
       console.log(localStorageData);
 
       if (document.getElementById('offlineBadge')) {
@@ -413,8 +414,9 @@ class DBHelper {
       //if the local storage isn't empty, then addNewReview() func gets called and the item gets removed from the local storage
       if (localStorageData !== null) {
         console.log("Local storage data about to get removed"); //logging the action which's about to happen
+        //var reviews = localStorage.getItem('reviewSubmit');
         DBHelper.addNewReview(localStorageData); //add new review
-        localStorage.removeItem('data'); //remove 'data' from local storage
+        localStorage.removeItem('reviewSubmit'); //remove 'reviewSubmit' from local storage
       }
     });
   }
@@ -439,7 +441,6 @@ class DBHelper {
    * Change the value of the is_favorite when the button is pressed
    */
   static favoriteButtonUpdate(restaurant_id, value) {
-    DBHelper.putMethod(`http://localhost:1337/restaurants/${restaurant_id}/?is_favorite=${value}`, value); 
     
     dbPromise.then(db => {
       return db.transaction('restaurants', 'readwrite')
@@ -455,10 +456,26 @@ class DBHelper {
           object.is_favorite = value; //set the is_favorite the value we're passing in the main.js / 
           store.put(object); //update it
         }); 
-        return tx.complete;
+        //console.log(obj); //console.log the obj
+        return tx.complete; //return
       }).then(function () {
-        console.log('item updated!');
+        console.log('item updated!'); //notify that the review has been updated
+        DBHelper.putMethod(`http://localhost:1337/restaurants/${restaurant_id}/?is_favorite=${value}`, value); 
       });
     })
+  }
+
+  static favoriteButtonChage(value) {
+    if (value) {
+      button.setAttribute("aria-label", "Remove this restaurant as your favorite");
+      button.classList.remove("favorite-false");
+      button.classList.add("favorite-true");
+      console.log("Changed to true");
+    } else {
+      button.setAttribute("aria-label", "Set this restaurant as your favorite");
+      button.classList.remove("favorite-true");
+      button.classList.add("favorite-false");
+      console.log("Changed to false");
+    }
   }
 }
