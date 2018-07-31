@@ -30,12 +30,12 @@ I was really careful about PLAGIARISM while coding this project. The other resou
 # Audit
 The audit I run on Incognito Google Chrome (Linux) gave me these results:
 
-index.html
-    Performance: 99
-    PWA: 100
+index.html:
+    Performance: 99,
+    PWA: 100,
     Accessibility: 94
 
-restaurant.html
-    Performance: 99
-    PWA: 100
+restaurant.html:
+    Performance: 99,
+    PWA: 100,
     Accessibility: 90
