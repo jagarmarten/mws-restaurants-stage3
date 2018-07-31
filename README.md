@@ -13,7 +13,7 @@ All of the new functionalities had to be created **offline first** - the form wo
 You can try this project right in your web browser with this url: https://jagarmarten.github.io/mws-restaurants-stage3/
 You also need to download and execute server from this url: https://github.com/udacity/mws-restaurant-stage-3
 
-#NOTES
+# NOTES
 
 In this project, we also had to have a mechanism which would allow the user to add a new revie when he's offline. The first method was using the BACK-SYNC but it was a bit harder to implement at first. The second one I found out about was using localStorage.
    
@@ -27,7 +27,7 @@ While making this form I mainly used this resources:
     
 I was really careful about PLAGIARISM while coding this project. The other resources I used were my tutor and my mentor. I also found many similarities in all of these resources.
 
-#Audit
+# Audit
 The audit I run on Incognito Google Chrome (Linux) gave me these results:
 
 index.html
