@@ -26,3 +26,16 @@ While making this form I mainly used this resources:
 4. https: //www.smashingmagazine.com/2010/10/local-storage-and-how-to-use-it/ - I also used this tutorial when learning how the localstorage works
     
 I was really careful about PLAGIARISM while coding this project. The other resources I used were my tutor and my mentor. I also found many similarities in all of these resources.
+
+#Audit
+The audit I run on Incognito Google Chrome (Linux) gave me these results:
+
+index.html
+    Performance: 99
+    PWA: 100
+    Accessibility: 94
+
+restaurant.html
+    Performance: 99
+    PWA: 100
+    Accessibility: 90
