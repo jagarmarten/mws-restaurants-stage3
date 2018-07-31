@@ -180,9 +180,9 @@ createRestaurantHTML = (restaurant) => {
   li.append(more)
 
   //function for faster class exchange
-  exchangeClass = (oldClass, newClass) => {
-    button.classList.remove(oldClass); //removing a class
-    button.classList.add(newClass); //adding a class
+  exchangeClass = (element, oldClass, newClass) => {
+    element.classList.remove(oldClass); //removing a class
+    element.classList.add(newClass); //adding a class
   }
 
   //creating the favorite button as an input
@@ -197,11 +197,11 @@ createRestaurantHTML = (restaurant) => {
     //if the restaurant is favorite, then to this and if it isn't than do that. This is a newer version of the code which is shorter but in the restaurant_info.js is a longer version which is commented out.
     if(restaurant.is_favorite) {
       button.setAttribute("aria-label", "Remove this restaurant as your favorite"); //adding it a aria label
-      exchangeClass("favorite-false", "favorite-true"); //remove favorite-false class and add a favorite-true class
+      exchangeClass(button, "favorite-false", "favorite-true"); //remove favorite-false class and add a favorite-true class
       console.log("Changed to true"); //printing in console
     } else {
       button.setAttribute("aria-label", "Set this restaurant as your favorite"); //adding it a aria label
-      exchangeClass("favorite-true", "favorite-false"); //remove favorite-true class and add a favorite-false class
+      exchangeClass(button, "favorite-true", "favorite-false"); //remove favorite-true class and add a favorite-false class
       console.log("Changed to false"); //printing in console
     }
   });
@@ -209,13 +209,11 @@ createRestaurantHTML = (restaurant) => {
   //if the restaurant is favorite, then to this and if it isn't than do that. This is a newer version of the code which is shorter but in the restaurant_info.js is a longer version which is commented out.
   if (restaurant.is_favorite) {
     button.setAttribute("aria-label", "Remove this restaurant as your favorite"); //adding it a aria label
-    button.classList.remove("favorite-false"); //removing a class
-    button.classList.add("favorite-true"); //adding a class
+    exchangeClass(button, "favorite-false", "favorite-true"); //remove favorite-false class and add a favorite-true class
     console.log("Changed to true"); //printing in console
   } else {
     button.setAttribute("aria-label", "Set this restaurant as your favorite"); //adding it a aria label
-    button.classList.remove("favorite-true"); //removing a class
-    button.classList.add("favorite-false"); //adding a class
+    exchangeClass(button, "favorite-true", "favorite-false"); //remove favorite-true class and add a favorite-false class
     console.log("Changed to false"); //printing in console
   }
   li.append(button); //add the button to the li

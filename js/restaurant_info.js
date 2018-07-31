@@ -85,6 +85,13 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   //
   const section = document.getElementById("restaurant-container"); //get the section
 
+  //function for faster class exchange
+  exchangeClass = (element, oldClass, newClass) => {
+    element.classList.remove(oldClass); //removing a class
+    element.classList.add(newClass); //adding a class
+  }
+
+  //creating the favorite button as an input
   let button = document.createElement('input'); //create new input element
   button.setAttribute('type', 'button'); //make this input of type button
   button.classList.add("button-favorite"); //adding it a class with which I can control in in .css file
@@ -96,13 +103,11 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     //if the restaurant is favorite, then to this and if it isn't than do that. This is a newer version of the code which is shorter but in the restaurant_info.js is a longer version which is commented out.
     if (restaurant.is_favorite) {
       button.setAttribute("aria-label", "Remove this restaurant as your favorite"); //adding it a aria label
-      button.classList.remove("favorite-false"); //removing a class
-      button.classList.add("favorite-true"); //adding a class
+      exchangeClass(button, "favorite-false", "favorite-true"); //remove favorite-false class and add a favorite-true class
       console.log("Changed to true"); //printing in console
     } else {
       button.setAttribute("aria-label", "Set this restaurant as your favorite"); //adding it a aria label
-      button.classList.remove("favorite-true"); //removing a class
-      button.classList.add("favorite-false"); //adding a class
+      exchangeClass(button, "favorite-true", "favorite-false"); //remove favorite-true class and add a favorite-false class
       console.log("Changed to false"); //printing in console
     }
   });
@@ -110,13 +115,11 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   //if the restaurant is favorite, then to this and if it isn't than do that. This is a newer version of the code which is shorter but in the restaurant_info.js is a longer version which is commented out.
   if (restaurant.is_favorite) {
     button.setAttribute("aria-label", "Remove this restaurant as your favorite"); //adding it a aria label
-    button.classList.remove("favorite-false"); //removing a class
-    button.classList.add("favorite-true"); //adding a class
+    exchangeClass(button, "favorite-false", "favorite-true"); //remove favorite-false class and add a favorite-true class
     console.log("Changed to true"); //printing in console
   } else {
     button.setAttribute("aria-label", "Set this restaurant as your favorite"); //adding it a aria label
-    button.classList.remove("favorite-true"); //removing a class
-    button.classList.add("favorite-false"); //adding a class
+    exchangeClass(button, "favorite-true", "favorite-false"); //remove favorite-true class and add a favorite-false class
     console.log("Changed to false"); //printing in console
   }
   section.append(button); //add the button to the section
