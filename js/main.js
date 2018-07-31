@@ -137,6 +137,7 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
  */
 createRestaurantHTML = (restaurant) => {
 
+  //using the image lazy loading plugin
   echo.init({
     offset: 100,
     throttle: 250,
@@ -163,7 +164,6 @@ createRestaurantHTML = (restaurant) => {
   name.innerHTML = restaurant.name;
   li.append(name);
   
-  
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
   li.append(neighborhood);
@@ -172,7 +172,6 @@ createRestaurantHTML = (restaurant) => {
   address.innerHTML = restaurant.address;
   li.append(address);
   
-  
   const more = document.createElement('a');
   more.innerHTML = 'View Details';
   more.tabIndex = "0";
@@ -180,21 +179,44 @@ createRestaurantHTML = (restaurant) => {
   more.href = DBHelper.urlForRestaurant(restaurant);
   li.append(more)
 
+  //creating the favorite button as an input
   let button = document.createElement('input'); //create new input element
   button.setAttribute('type', 'button'); //make this input of type button
-  button.classList.add("button-favorite");
-  button.value = "❤";
-
+  button.classList.add("button-favorite"); //adding it a class with which I can control in in .css file
+  button.value = "❤"; //adding it a value - a heart is a common symbol used
+  //adding an event listener which watches for whether the button was clicked
   button.addEventListener("click", function() {
-    DBHelper.favoriteButtonUpdate(restaurant.id, !restaurant.is_favorite);
-    restaurant.is_favorite = !restaurant.is_favorite; //assigning it an opposite value
-    DBHelper.favoriteButtonChange(restaurant.is_favorite);
+    DBHelper.favoriteButtonUpdate(restaurant.id, !restaurant.is_favorite); //using the function from DBHelper to PUT to the server
+    restaurant.is_favorite = !restaurant.is_favorite; //assigning it an opposite value - from true to false and from false to true
+    //if the restaurant is favorite, then to this and if it isn't than do that. This is a newer version of the code which is shorter but in the restaurant_info.js is a longer version which is commented out.
+    if(restaurant.is_favorite) {
+      button.setAttribute("aria-label", "Remove this restaurant as your favorite"); //adding it a aria label
+      button.classList.remove("favorite-false"); //removing a class
+      button.classList.add("favorite-true"); //adding a class
+      console.log("Changed to true"); //printing in console
+    } else {
+      button.setAttribute("aria-label", "Set this restaurant as your favorite"); //adding it a aria label
+      button.classList.remove("favorite-true"); //removing a class
+      button.classList.add("favorite-false"); //adding a class
+      console.log("Changed to false"); //printing in console
+    }
   });
-  
-  DBHelper.favoriteButtonChange(restaurant.is_favorite);
+  //this code is used normally, without the button being pressed
+  //if the restaurant is favorite, then to this and if it isn't than do that. This is a newer version of the code which is shorter but in the restaurant_info.js is a longer version which is commented out.
+  if (restaurant.is_favorite) {
+    button.setAttribute("aria-label", "Remove this restaurant as your favorite"); //adding it a aria label
+    button.classList.remove("favorite-false"); //removing a class
+    button.classList.add("favorite-true"); //adding a class
+    console.log("Changed to true"); //printing in console
+  } else {
+    button.setAttribute("aria-label", "Set this restaurant as your favorite"); //adding it a aria label
+    button.classList.remove("favorite-true"); //removing a class
+    button.classList.add("favorite-false"); //adding a class
+    console.log("Changed to false"); //printing in console
+  }
   li.append(button); //add the button to the li
 
-  return li
+  return li; //returning the li
 }
 
 

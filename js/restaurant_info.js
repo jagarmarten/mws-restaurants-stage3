@@ -40,17 +40,19 @@ fetchRestaurantFromURL = (callback) => {
   }
 }
 
+//it's a function similar to fetchRestaurantFromURL() but in this case we're fetching the reviews by restaurant id because we want to display only the correct reviews
 fetchReviewsFromURL = () => {
   DBHelper.fetchReviewsByRestaurantId(id, (error, review) => {
     self.review = review;
+    //if there aren't any reviews, then return an error.
     if (!review) {
       console.error(error);
       return;
     }
-    fillReviewsHTML(review);
+    fillReviewsHTML(review); //if everything works properly, then fill the reviews into HTML (this function already existed)
   });
 }
-fetchReviewsFromURL();
+fetchReviewsFromURL(); //calling the function
 
 /**
  * Create restaurant HTML and add it to the webpage
@@ -77,24 +79,53 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
 
+  //
+  //adding a favorite button here as well - in the last part of the section
+  //
+  //
   const section = document.getElementById("restaurant-container"); //get the section
 
   let button = document.createElement('input'); //create new input element
   button.setAttribute('type', 'button'); //make this input of type button
-  button.classList.add("button-favorite");
-  button.value = "❤";
-
+  button.classList.add("button-favorite"); //adding it a class with which I can control in in .css file
+  button.value = "❤"; //adding it a value - a heart is a common symbol used
+  //adding an event listener which watches for whether the button was clicked
   button.addEventListener("click", function () {
-    DBHelper.favoriteButtonUpdate(restaurant.id, !restaurant.is_favorite);
-    restaurant.is_favorite = !restaurant.is_favorite; //assigning it an opposite value
-    DBHelper.favoriteButtonChange(restaurant.is_favorite);
+    DBHelper.favoriteButtonUpdate(restaurant.id, !restaurant.is_favorite); //using the function from DBHelper to PUT to the server
+    restaurant.is_favorite = !restaurant.is_favorite; //assigning it an opposite value - from true to false and from false to true
+    //if the restaurant is favorite, then to this and if it isn't than do that. This is a newer version of the code which is shorter but in the restaurant_info.js is a longer version which is commented out.
+    if (restaurant.is_favorite) {
+      button.setAttribute("aria-label", "Remove this restaurant as your favorite"); //adding it a aria label
+      button.classList.remove("favorite-false"); //removing a class
+      button.classList.add("favorite-true"); //adding a class
+      console.log("Changed to true"); //printing in console
+    } else {
+      button.setAttribute("aria-label", "Set this restaurant as your favorite"); //adding it a aria label
+      button.classList.remove("favorite-true"); //removing a class
+      button.classList.add("favorite-false"); //adding a class
+      console.log("Changed to false"); //printing in console
+    }
   });
-
-  DBHelper.favoriteButtonChange(restaurant.is_favorite);
-  section.append(button); //add the button to the li
+  //this code is used normally, without the button being pressed
+  //if the restaurant is favorite, then to this and if it isn't than do that. This is a newer version of the code which is shorter but in the restaurant_info.js is a longer version which is commented out.
+  if (restaurant.is_favorite) {
+    button.setAttribute("aria-label", "Remove this restaurant as your favorite"); //adding it a aria label
+    button.classList.remove("favorite-false"); //removing a class
+    button.classList.add("favorite-true"); //adding a class
+    console.log("Changed to true"); //printing in console
+  } else {
+    button.setAttribute("aria-label", "Set this restaurant as your favorite"); //adding it a aria label
+    button.classList.remove("favorite-true"); //removing a class
+    button.classList.add("favorite-false"); //adding a class
+    console.log("Changed to false"); //printing in console
+  }
+  section.append(button); //add the button to the section
 }
 
 /*
+
+//This is the old favoriteButton function I used. It worked pretty well but it didn't work on the main.js page
+
 //universal postMethod()
 let postMethod = (url, data) => {
   //fetch with POST method
@@ -255,18 +286,21 @@ createReviewHTML = (review) => {
   rating.innerHTML = `Rating: ${review.rating}`;
   reviewsInfo.appendChild(rating);
 
+  //when filling the reviews, check for whether the review was added while being offline. If it is offline then add it an offlineBadge in red color
   if(!navigator.onLine) {
     console.log("offline");
     const offline = document.createElement('p');
     offline.id = 'offlineBadge';
     offline.innerHTML = `Offline`;
     reviewsInfo.appendChild(offline);
-  } else {
-    //const offlineBadge = document.
-    if(document.getElementById('offlineBadge')) {
+  }
+
+  //when the website is online again and the review was submitted, remove the offlineBadge from it
+  window.addEventListener('online', () => {
+    if (document.getElementById('offlineBadge')) {
       reviewsInfo.removeChild(document.getElementById('offlineBadge'));
     }
-  }
+  });
   
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
@@ -312,13 +346,14 @@ addReviews = () => {
 
       DBHelper.addNewReview(postData);
       //visually adding to the reviews on the website
-      addReviewToPage(postData);
+      addReviewToPage(postData); //functio in which I visually add the review to the page
       document.getElementById("userReviewForm").reset();
     });
   //});
 }
 addReviews();
 
+//visually adding the review to the page, even when it wasn't submited to the server yet
 addReviewToPage = (data) => {
   const ul = document.getElementById('reviews-list');
   ul.appendChild(createReviewHTML(data));
